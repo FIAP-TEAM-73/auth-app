@@ -1,5 +1,5 @@
 name: "Terraform"
-run-name: Deployment for Terraform Database Infrastructure to AWS provider on branch ${{ github.head_ref }} by @${{ github.actor }}
+run-name: Deployment for Terraform API gateway Infrastructure to AWS provider on branch ${{ github.head_ref }} by @${{ github.actor }}
 on:
   push:
     branches:
