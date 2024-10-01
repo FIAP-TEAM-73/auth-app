@@ -56,7 +56,6 @@ jobs:
           echo "VALIDATE_FUNCTION=$VALIDATE_FUNCTION"
           echo authorizer=$AUTHORIZE_FUNCTION >> $GITHUB_OUTPUT
           echo validator=$VALIDATE_FUNCTION >> $GITHUB_OUTPUT
-          echo "secondword=world" | Out-File -FilePath $Env:GITHUB_OUTPUT -Encoding utf8 -Append
           cat $GITHUB_OUTPUT
       - run:   echo "$OUTPUTS"
         shell: bash
