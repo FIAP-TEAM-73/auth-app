@@ -181,7 +181,7 @@ jobs:
       - name: Update lambda env
         shell: bash
         env:
-          STAGE_ADDRESS: ${{ needs.terraform.outputs.stage_address }}/api/v1
+          STAGE_ADDRESS: ${{ needs.terraform.outputs.stage_address }}api/v1
           VALIDATE_FUNCTION: ${{ needs.build-deploy.outputs.validator }}
         run: |
           aws lambda update-function-configuration \
