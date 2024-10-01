@@ -90,9 +90,13 @@ jobs:
           VALIDATE_FUNCTION: ${{ needs.build-deploy.outputs.validator-function-id }}
           PLAN: ${{ steps.plan.outputs.stdout }}
         run: |
+          echo "AUTHORIZE_FUNCTION=${{env.AUTHORIZE_FUNCTION}}"
+          echo "VALIDATE_FUNCTION=${{env.VALIDATE_FUNCTION}}"
+          echo "AUTHORIZE_FUNCTION=$AUTHORIZE_FUNCTION"
+          echo "VALIDATE_FUNCTION=$VALIDATE_FUNCTION"
           terraform -chdir=infra plan \
-          -var="customer_validate_function_name=$VALIDATE_FUNCTION" \
-          -var="authorizer_function_name=$AUTHORIZE_FUNCTION" \
+          -var="customer_validate_function_name=${{env.VALIDATE_FUNCTION}}" \
+          -var="authorizer_function_name=${{env.AUTHORIZE_FUNCTION}}" \
           -no-color -input=false
         continue-on-error: true
 
