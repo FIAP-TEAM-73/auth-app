@@ -16,6 +16,6 @@ resource "aws_apigatewayv2_integration" "integration-tech-challenge-73" {
 resource "aws_apigatewayv2_integration" "lambda-integration" {
   api_id             = aws_apigatewayv2_api.api-tech-challenge-73.id
   integration_type   = "AWS_PROXY"
-  integration_uri    = "arn:aws:lambda:us-east-1:245903023069:function:auth-app-CustomerValidateFunction-NF94tTaN1KUs"
+  integration_uri    = "arn:aws:lambda:us-east-1:245903023069:function:${var.customer_validate_function_name}"
   integration_method = "POST"
 }

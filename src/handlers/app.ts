@@ -9,6 +9,7 @@ import jwt from 'jsonwebtoken';
  * @returns {Object} object - API Gateway Lambda Proxy Output Format
  *
  */
+const uri = process.env.TECH_CHALLENGE_URI;
 
 export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     try {
@@ -20,10 +21,22 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
                 }),
             };
         }
+        const cpf = JSON.parse(event.body).cpf;
+        const response: { isCustomer: boolean } = await fetch(`${uri}/customer/${cpf}`).then((response) =>
+            response.json(),
+        );
+        if (!response.isCustomer) {
+            return {
+                statusCode: 404,
+                body: JSON.stringify({
+                    message: 'Customer not found',
+                }),
+            };
+        }
         return {
             statusCode: 200,
             body: JSON.stringify({
-                token: generateToken(`hello world: ${JSON.parse(event.body).cpf}`),
+                token: generateToken(cpf),
             }),
         };
     } catch (err) {
@@ -42,6 +55,5 @@ const generateToken = (payload: string) => {
     const options = {
         expiresIn: '10m', // Token expiration time
     };
-
     return jwt.sign({ payload }, secretKey, options);
 };

@@ -41,7 +41,9 @@ Resources:
               Required: true
               ValidateBody: true
               ValidateParameters: true
-
+      Environment:
+        Variables:
+          TECH_CHALLENGE_URI: http://localhost:9001/api/v1
     Metadata:
       BuildMethod: esbuild
       BuildProperties:

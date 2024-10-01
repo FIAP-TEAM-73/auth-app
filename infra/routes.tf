@@ -6,15 +6,24 @@ resource "aws_apigatewayv2_route" "default-route-tech-challenge-37" {
 }
 
 resource "aws_apigatewayv2_route" "route-tech-challenge-37" {
-  api_id        = aws_apigatewayv2_api.api-tech-challenge-73.id
-  route_key     = "ANY /api/v1{proxy+}"
-  target        = "integrations/${aws_apigatewayv2_integration.integration-tech-challenge-73.id}"
-  authorizer_id = aws_apigatewayv2_authorizer.lambda-authorizer.id
+  api_id             = aws_apigatewayv2_api.api-tech-challenge-73.id
+  route_key          = "ANY /api/v1/{proxy+}"
+  target             = "integrations/${aws_apigatewayv2_integration.integration-tech-challenge-73.id}"
+  authorization_type = "CUSTOM"
+  authorizer_id      = aws_apigatewayv2_authorizer.lambda-authorizer.id
+  depends_on         = [aws_lambda_permission.allow_authorizer]
+}
+
+resource "aws_apigatewayv2_route" "route-create-customer" {
+  api_id             = aws_apigatewayv2_api.api-tech-challenge-73.id
+  route_key          = "GET /api/v1/customer/{cpf}"
+  target             = "integrations/${aws_apigatewayv2_integration.integration-tech-challenge-73.id}"
+  authorization_type = "NONE"
 }
 
 resource "aws_apigatewayv2_route" "route-validate-customer" {
   api_id             = aws_apigatewayv2_api.api-tech-challenge-73.id
-  route_key          = "GET /api/v1/customer/{cpf}"
+  route_key          = "POST /api/v1/customer"
   target             = "integrations/${aws_apigatewayv2_integration.integration-tech-challenge-73.id}"
   authorization_type = "NONE"
 }
