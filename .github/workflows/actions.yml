@@ -63,13 +63,17 @@ jobs:
           OUTPUTS: ${{ toJSON(steps.sam-list.outputs) }}
   terraform:
     needs: build-deploy
-    name: "Terraform ${{needs.build-deploy.outputs}}"
+    name: "Terraform"
     runs-on: ubuntu-latest
     outputs:
       stage_address: ${{steps.apply.outputs.stage_address}}
     permissions:
       pull-requests: write
     steps:
+      - run:   echo "$OUTPUTS"
+        shell: bash
+        env:
+          OUTPUTS: ${{ toJSON(needs.build-deploy.outputs) }}
       - name: Checkout
         uses: actions/checkout@v3
 
@@ -99,7 +103,6 @@ jobs:
           PLAN: ${{ steps.plan.outputs.stdout }}
         shell: bash
         run: |
-          cat $GITHUB_OUTPUT
           echo "AUTHORIZE_FUNCTION=${{env.AUTHORIZE_FUNCTION}}"
           echo "VALIDATE_FUNCTION=${{env.VALIDATE_FUNCTION}}"
           echo "AUTHORIZE_FUNCTION=${{ needs.build-deploy.outputs.authorizer }}
