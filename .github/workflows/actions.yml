@@ -27,7 +27,7 @@ jobs:
         run: |
           sudo apt update -y
           sudo apt install nodejs -y
-          sudo npm install
+          cd src && sudo npm install
       - name: Python setup
         uses: actions/setup-python@v2
       - name: AWS SAM setup
@@ -39,13 +39,13 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
       - name: Build app
-        run: npm run build
+        run: cd src && npm run build
       - name: Deploy
-        run: sam deploy
+        run: cd src && sam deploy
       - name: Export envs
         id: sam-list
         run: |
-          sam list resources --stack-name "auth-app" --output json > resources.json
+          cd src && sam list resources --stack-name "auth-app" --output json > resources.json
           AUTHORIZE_FUNCTION=$(jq -r '.[] | select(.LogicalResourceId=="AuthorizerFunction") | .PhysicalResourceId' resources.json)
           VALIDATE_FUNCTION=$(jq -r '.[] | select(.LogicalResourceId=="CustomerValidateFunction") | .PhysicalResourceId' resources.json)
           echo "AUTHORIZE_FUNCTION=$AUTHORIZE_FUNCTION"
