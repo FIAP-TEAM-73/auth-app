@@ -156,7 +156,7 @@ jobs:
             -auto-approve -input=false
           
           STAGE_ADDRESS=$(terraform -chdir=infra output -raw stage_address)
-          echo "stage_address=$$STAGE_ADDRESS" >> $GITHUB_OUTPUT
+          echo "stage_address=$STAGE_ADDRESS" >> $GITHUB_OUTPUT
 
   work-around:
     needs: [terraform, build-deploy]
