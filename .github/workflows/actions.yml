@@ -56,7 +56,7 @@ jobs:
           echo validator=$VALIDATE_FUNCTION >> $GITHUB_OUTPUT
   terraform:
     needs: build-deploy
-    name: "Terraform"
+    name: "Terraform ${{needs.build-deploy.outputs}}"
     runs-on: ubuntu-latest
     outputs:
       stage_address: ${{steps.apply.outputs.stage_address}}
