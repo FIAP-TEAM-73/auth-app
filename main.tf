@@ -28,7 +28,7 @@ resource "aws_apigatewayv2_stage" "stage-tech-challenge-73" {
 #   action        = "lambda:InvokeFunction"  # Action to allow API Gateway to invoke Lambda
 #   function_name = aws_apigatewayv2_route.route-authentication.#"auth-app-CustomerValidateFunction-NF94tTaN1KUs"  # Name of your Lambda function
 #   principal     = "apigateway.amazonaws.com"  # API Gateway as the principal (who is allowed to invoke)
-  
+
 #   # Source ARN for the API Gateway route
 #   source_arn = "${aws_apigatewayv2_api.api-tech-challenge-73.execution_arn}/*/*/customer/validate"
 # }
