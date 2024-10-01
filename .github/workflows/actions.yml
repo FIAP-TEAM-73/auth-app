@@ -51,8 +51,8 @@ jobs:
           VALIDATE_FUNCTION=$(jq -r '.[] | select(.LogicalResourceId=="CustomerValidateFunction") | .PhysicalResourceId' resources.json)
           echo "AUTHORIZE_FUNCTION=$AUTHORIZE_FUNCTION"
           echo "VALIDATE_FUNCTION=$VALIDATE_FUNCTION"
-          echo "authorizer=$AUTHORIZE_FUNCTION" >> "$GITHUB_OUTPUT"
-          echo "validator=$VALIDATE_FUNCTION" >> "$GITHUB_OUTPUT"
+          echo "authorizer=$AUTHORIZE_FUNCTION" >> $env:GITHUB_OUTPUT
+          echo "validator=$VALIDATE_FUNCTION" >> $env:GITHUB_OUTPUT
   terraform:
     needs: build-deploy
     name: "Terraform"
