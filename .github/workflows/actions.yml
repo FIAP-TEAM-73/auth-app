@@ -17,9 +17,9 @@ jobs:
   build-deploy:
     #if: (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/RELEASE/')) && github.event_name == 'push'
     runs-on: ubuntu-latest
-    # outputs:
-    #   authorizer-function-id: ${{steps.sam-list.authorizer}}
-    #   validator-function-id: ${{steps.sam-list.validator}}
+    outputs:
+      authorizer: ${{ steps.sam-list.authorizer }}
+      validator: ${{ steps.sam-list.validator }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
