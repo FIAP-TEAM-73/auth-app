@@ -45,14 +45,15 @@ jobs:
         run: cd src && sam deploy
       - name: Export envs
         id: sam-list
+        shell: bash
         run: |
           cd src && sam list resources --stack-name "auth-app" --output json > resources.json
           AUTHORIZE_FUNCTION=$(jq -r '.[] | select(.LogicalResourceId=="AuthorizerFunction") | .PhysicalResourceId' resources.json)
           VALIDATE_FUNCTION=$(jq -r '.[] | select(.LogicalResourceId=="CustomerValidateFunction") | .PhysicalResourceId' resources.json)
           echo "AUTHORIZE_FUNCTION=$AUTHORIZE_FUNCTION"
           echo "VALIDATE_FUNCTION=$VALIDATE_FUNCTION"
-          echo "authorizer=$AUTHORIZE_FUNCTION" >> $env:GITHUB_OUTPUT
-          echo "validator=$VALIDATE_FUNCTION" >> $env:GITHUB_OUTPUT
+          echo "authorizer=$AUTHORIZE_FUNCTION" >> $"GITHUB_OUTPUT"
+          echo "validator=$VALIDATE_FUNCTION" >> $"GITHUB_OUTPUT"
   terraform:
     needs: build-deploy
     name: "Terraform"
@@ -89,6 +90,7 @@ jobs:
           AUTHORIZE_FUNCTION: ${{ needs.build-deploy.outputs.authorizer-function-id }}
           VALIDATE_FUNCTION: ${{ needs.build-deploy.outputs.validator-function-id }}
           PLAN: ${{ steps.plan.outputs.stdout }}
+        shell: bash
         run: |
           echo "AUTHORIZE_FUNCTION=${{env.AUTHORIZE_FUNCTION}}"
           echo "VALIDATE_FUNCTION=${{env.VALIDATE_FUNCTION}}"
@@ -155,6 +157,7 @@ jobs:
         env:
           AUTHORIZE_FUNCTION: ${{ needs.build-deploy.outputs.authorizer-function-id }}
           VALIDATE_FUNCTION: ${{ needs.build-deploy.outputs.validator-function-id }}
+        shell: bash
         run: |
           terraform -chdir=infra apply \
           -var="customer_validate_function_name=${{ env.VALIDATE_FUNCTION }}" \
@@ -175,6 +178,7 @@ jobs:
           aws-region: us-east-1
       # sam build 
       - name: Update lambda env
+        shell: bash
         env:
          STAGE_ADDRESS: ${{ needs.terraform.outputs.stage_address }}/api/v1
          VALIDATE_FUNCTION: ${{ needs.build-deploy.outputs.validator-function-id }}
