@@ -17,9 +17,9 @@ jobs:
   build-deploy:
     #if: (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/RELEASE/')) && github.event_name == 'push'
     runs-on: ubuntu-latest
-    outputs:
-      authorizer-function-id: ${{steps.sam-list.authorizer}}
-      validator-function-id: ${{steps.sam-list.validator}}
+    # outputs:
+    #   authorizer-function-id: ${{steps.sam-list.authorizer}}
+    #   validator-function-id: ${{steps.sam-list.validator}}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -52,8 +52,8 @@ jobs:
           VALIDATE_FUNCTION=$(jq -r '.[] | select(.LogicalResourceId=="CustomerValidateFunction") | .PhysicalResourceId' resources.json)
           echo "AUTHORIZE_FUNCTION=$AUTHORIZE_FUNCTION"
           echo "VALIDATE_FUNCTION=$VALIDATE_FUNCTION"
-          echo authorizer=$AUTHORIZE_FUNCTION >> $GITHUB_ENV
-          echo validator=$VALIDATE_FUNCTION >> $GITHUB_ENV
+          echo authorizer=$AUTHORIZE_FUNCTION >> $GITHUB_OUTPUT
+          echo validator=$VALIDATE_FUNCTION >> $GITHUB_OUTPUT
   terraform:
     needs: build-deploy
     name: "Terraform"
@@ -87,15 +87,15 @@ jobs:
         id: plan
         if: github.event_name == 'pull_request'
         env:
-          AUTHORIZE_FUNCTION: ${{ needs.build-deploy.outputs.authorizer-function-id }}
-          VALIDATE_FUNCTION: ${{ needs.build-deploy.outputs.validator-function-id }}
+          AUTHORIZE_FUNCTION: ${{ needs.build-deploy.outputs.authorizer }}
+          VALIDATE_FUNCTION: ${{ needs.build-deploy.outputs.validator }}
           PLAN: ${{ steps.plan.outputs.stdout }}
         shell: bash
         run: |
           echo "AUTHORIZE_FUNCTION=${{env.AUTHORIZE_FUNCTION}}"
           echo "VALIDATE_FUNCTION=${{env.VALIDATE_FUNCTION}}"
-          echo "AUTHORIZE_FUNCTION=$AUTHORIZE_FUNCTION"
-          echo "VALIDATE_FUNCTION=$VALIDATE_FUNCTION"
+          echo "AUTHORIZE_FUNCTION=${{ needs.build-deploy.outputs.authorizer }}
+          echo "VALIDATE_FUNCTION=${{ needs.build-deploy.outputs.validator }}
           terraform -chdir=infra plan \
           -var="customer_validate_function_name=${{env.VALIDATE_FUNCTION}}" \
           -var="authorizer_function_name=${{env.AUTHORIZE_FUNCTION}}" \
