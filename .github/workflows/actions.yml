@@ -11,7 +11,6 @@ env:
   TF_CLOUD_ORGANIZATION: "FIAP-TEAM-73"
   TF_API_TOKEN: "${{ secrets.TF_API_TOKEN }}"
   TF_WORKSPACE: "terraform-api-integration"
-  TF_DATA_DIR: "infra"
   CONFIG_DIRECTORY: "./"
 
 jobs:
@@ -73,15 +72,15 @@ jobs:
 
       - name: Terraform Format
         id: fmt
-        run: terraform fmt -check
+        run: terraform -chdir=infra fmt -check
 
       - name: Terraform Init
         id: init
-        run: terraform init
+        run: terraform -chdir=infra init
       
       - name: Terraform Validate
         id: validate
-        run: terraform validate -no-color
+        run: terraform -chdir=infra validate -no-color
 
       - name: Terraform Plan
         id: plan
@@ -91,7 +90,7 @@ jobs:
           VALIDATE_FUNCTION: ${{ needs.build-deploy.outputs.validator-function-id }}
           PLAN: ${{ steps.plan.outputs.stdout }}
         run: |
-          terraform plan \
+          terraform -chdir=infra plan \
           -var="customer_validate_function_name=$VALIDATE_FUNCTION" \
           -var="authorizer_function_name=$AUTHORIZE_FUNCTION" \
           -no-color -input=false
@@ -153,7 +152,7 @@ jobs:
           AUTHORIZE_FUNCTION: ${{ needs.build-deploy.outputs.authorizer-function-id }}
           VALIDATE_FUNCTION: ${{ needs.build-deploy.outputs.validator-function-id }}
         run: |
-          terraform apply \
+          terraform -chdir=infra apply \
           -var="customer_validate_function_name=$VALIDATE_FUNCTION" \
           -var="authorizer_function_name=$AUTHORIZE_FUNCTION" \
           -auto-approve -input=false
