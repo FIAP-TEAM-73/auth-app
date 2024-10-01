@@ -7,29 +7,6 @@ resource "aws_apigatewayv2_api" "api-tech-challenge-73" {
   protocol_type = "HTTP"
 }
 
-locals {
-  first_listener_arn = keys(data.aws_lb_listener.listener)[0]
-}
-
-resource "aws_apigatewayv2_integration" "integration-tech-challenge-73" {
-  api_id = aws_apigatewayv2_api.api-tech-challenge-73.id
-  #credentials_arn  = aws_iam_role.example.arn
-  description        = "Example with a load balancer"
-  integration_type   = "HTTP_PROXY"
-  integration_uri    = data.aws_lb_listener.listener[local.first_listener_arn].arn
-  integration_method = "ANY"
-  connection_type    = "VPC_LINK"
-  connection_id      = aws_apigatewayv2_vpc_link.vpc-link-tech-challenge.id
-}
-
-resource "aws_apigatewayv2_route" "route-tech-challenge-37" {
-  api_id    = aws_apigatewayv2_api.api-tech-challenge-73.id
-  route_key = "ANY /{proxy+}"
-
-  target             = "integrations/${aws_apigatewayv2_integration.integration-tech-challenge-73.id}"
-  authorization_type = "NONE"
-}
-
 resource "aws_apigatewayv2_vpc_link" "vpc-link-tech-challenge" {
   name               = "vpc-link-tech-challenge"
   security_group_ids = ["sg-03994733d8fddaebd"]
@@ -45,3 +22,13 @@ resource "aws_apigatewayv2_stage" "stage-tech-challenge-73" {
   name        = "$default"
   auto_deploy = true
 }
+
+# resource "aws_lambda_permission" "allow_api_gateway_invoke" {
+#   statement_id  = "292bef49-6eb4-5193-b27a-b8eebed2540c"  # Unique statement ID
+#   action        = "lambda:InvokeFunction"  # Action to allow API Gateway to invoke Lambda
+#   function_name = aws_apigatewayv2_route.route-authentication.#"auth-app-CustomerValidateFunction-NF94tTaN1KUs"  # Name of your Lambda function
+#   principal     = "apigateway.amazonaws.com"  # API Gateway as the principal (who is allowed to invoke)
+  
+#   # Source ARN for the API Gateway route
+#   source_arn = "${aws_apigatewayv2_api.api-tech-challenge-73.execution_arn}/*/*/customer/validate"
+# }
