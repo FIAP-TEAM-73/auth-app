@@ -57,6 +57,10 @@ jobs:
           echo authorizer=$AUTHORIZE_FUNCTION >> $GITHUB_OUTPUT
           echo validator=$VALIDATE_FUNCTION >> $GITHUB_OUTPUT
           cat $GITHUB_OUTPUT
+      - run:   echo "$OUTPUTS"
+        shell: bash
+        env:
+          OUTPUTS: ${{ toJSON(steps.sam-list.outputs) }}
   terraform:
     needs: build-deploy
     name: "Terraform ${{needs.build-deploy.outputs}}"
