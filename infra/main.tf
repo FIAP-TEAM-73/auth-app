@@ -36,5 +36,5 @@ resource "aws_lambda_permission" "allow_authorizer" {
   action        = "lambda:InvokeFunction"
   function_name = "arn:aws:lambda:us-east-1:245903023069:function:${var.authorizer_function_name}"
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.api-tech-challenge-73.execution_arn}/*/*/"
+  source_arn    = "${aws_apigatewayv2_api.api-tech-challenge-73.execution_arn}/*/*"
 }
