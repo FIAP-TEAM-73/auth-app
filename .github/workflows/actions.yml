@@ -41,7 +41,7 @@ jobs:
       - name: Build app
         run: cd src && npm run build
       - name: Deploy
-        run: cd src && sam deploy
+        run: cd src && sam deploy --parameter-overrides AccountId=${{ secrets.AWS_ACCOUNT_ID }}
       - name: Export envs
         id: sam-list
         shell: bash

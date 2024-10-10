@@ -8,7 +8,10 @@ Description: >
 Globals:
   Function:
     Timeout: 3
-
+Parameters:
+  AccountId:
+    Type: String
+    Description: AWS Academy account id
 Resources:
   API:
     Type: AWS::Serverless::Api
@@ -25,7 +28,7 @@ Resources:
   CustomerValidateFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Role: "arn:aws:iam::245903023069:role/LabRole"
+      Role: "arn:aws:iam::${AccountId}:role/LabRole"
       CodeUri: handlers/
       Handler: app.lambdaHandler
       Runtime: nodejs18.x
@@ -55,7 +58,7 @@ Resources:
   AuthorizerFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Role: "arn:aws:iam::245903023069:role/LabRole"
+      Role: "arn:aws:iam::${AccountId}:role/LabRole"
       CodeUri: handlers/
       Handler: authorizer.handler
       Runtime: nodejs18.x
