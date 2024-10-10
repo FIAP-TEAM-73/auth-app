@@ -41,7 +41,7 @@ jobs:
       - name: Build app
         run: cd src && npm run build
       - name: Deploy
-        run: cd src && sam deploy --parameter-overrides AccountId=${{ secrets.AWS_ACCOUNT_ID }}
+        run: cd src && sam deploy
       - name: Export envs
         id: sam-list
         shell: bash
@@ -145,7 +145,7 @@ jobs:
         run: exit 1
       - name: Terraform Apply
         id: apply
-        if: (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/FEATURE/')) && github.event_name == 'push'
+        if: (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/RELEASE/')) && github.event_name == 'push'
         env:
           AUTHORIZE_FUNCTION: ${{ needs.build-deploy.outputs.authorizer }}
           VALIDATE_FUNCTION: ${{ needs.build-deploy.outputs.validator }}
@@ -161,7 +161,7 @@ jobs:
           echo "stage_address=$STAGE_ADDRESS" >> $GITHUB_OUTPUT
           echo "::set-output name=stage_address_v2::$STAGE_ADDRESS"
   work-around:
-    if: (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/FEATURE/')) && github.event_name == 'push'
+    if: (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/RELEASE/')) && github.event_name == 'push'
     needs: [terraform, build-deploy]
     runs-on: ubuntu-latest
     steps:
