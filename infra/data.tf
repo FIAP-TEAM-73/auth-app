@@ -32,10 +32,3 @@ data "aws_subnet" "subnet" {
   for_each = toset(data.aws_subnets.subnets.ids)
   id       = each.value
 }
-
-# data "aws_lambda_functions" "all" {}
-
-# data "aws_lambda_function" "lf" {
-#   for_each      = toset(data.aws_lambda_functions.all.function_names)
-#   function_name = each.value
-# }

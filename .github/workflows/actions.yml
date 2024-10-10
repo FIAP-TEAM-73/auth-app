@@ -145,7 +145,7 @@ jobs:
         run: exit 1
       - name: Terraform Apply
         id: apply
-        if: steps.plan.outcome == 'success'
+        if: (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/FEATURE/')) && github.event_name == 'push'
         env:
           AUTHORIZE_FUNCTION: ${{ needs.build-deploy.outputs.authorizer }}
           VALIDATE_FUNCTION: ${{ needs.build-deploy.outputs.validator }}
@@ -160,12 +160,8 @@ jobs:
           STAGE_ADDRESS=$(terraform -chdir=infra output -raw stage_address)
           echo "stage_address=$STAGE_ADDRESS" >> $GITHUB_OUTPUT
           echo "::set-output name=stage_address_v2::$STAGE_ADDRESS"
-
-      - run: echo "$OUTPUTS"
-        shell: bash
-        env:
-          OUTPUTS: ${{ toJSON(steps.apply.outputs) }}
   work-around:
+    if: (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/FEATURE/')) && github.event_name == 'push'
     needs: [terraform, build-deploy]
     runs-on: ubuntu-latest
     steps:
