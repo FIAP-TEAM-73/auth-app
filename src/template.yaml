@@ -1,0 +1,76 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  aws-lambda-authorizer
+
+  Sample SAM Template for aws-lambda-authorizer
+
+Globals:
+  Function:
+    Timeout: 3
+Resources:
+  API:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: dev
+      Models:
+        Identification:
+          type: object
+          required:
+            - cpf
+          properties:
+            cpf:
+              type: string
+  CustomerValidateFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Role: !Join
+        - ''
+        - - 'arn:aws:iam::'
+          - !Ref AWS::AccountId
+          - ':role/LabRole'
+      CodeUri: handlers/
+      Handler: app.lambdaHandler
+      Runtime: nodejs18.x
+      Events:
+        CustomerValidate:
+          Type: Api
+          Properties:
+            RestApiId: !Ref API
+            Path: /customer/validate
+            Method: post
+            RequestModel:
+              Model: Identification
+              Required: true
+              ValidateBody: true
+              ValidateParameters: true
+      Environment:
+        Variables:
+          TECH_CHALLENGE_URI: http://localhost:9001/api/v1
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints:
+          - app.ts
+  AuthorizerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Role: !Join
+        - ''
+        - - 'arn:aws:iam::'
+          - !Ref AWS::AccountId
+          - ':role/LabRole'
+      CodeUri: handlers/
+      Handler: authorizer.handler
+      Runtime: nodejs18.x
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints:
+          - authorizer.ts

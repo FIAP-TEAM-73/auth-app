@@ -1,0 +1,185 @@
+name: "Terraform"
+run-name: Deployment for Terraform API gateway Infrastructure to AWS provider on branch ${{ github.head_ref }} by @${{ github.actor }}
+on:
+  push:
+    branches:
+      - main
+      - RELEASE/*
+  pull_request:
+
+env:
+  TF_CLOUD_ORGANIZATION: "FIAP-TEAM-73"
+  TF_API_TOKEN: "${{ secrets.TF_API_TOKEN }}"
+  TF_WORKSPACE: "terraform-api-integration"
+  CONFIG_DIRECTORY: "./"
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    outputs:
+      authorizer: ${{ steps.sam-list.outputs.authorizer }}
+      validator: ${{ steps.sam-list.outputs.validator }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setting up environment
+        run: |
+          sudo apt update -y
+          sudo apt install nodejs -y
+          cd src && sudo npm install
+      - name: Python setup
+        uses: actions/setup-python@v2
+      - name: AWS SAM setup
+        uses: aws-actions/setup-sam@v1
+      - name: AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: us-east-1
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+      - name: Build app
+        run: cd src && npm run build
+      - name: Deploy
+        run: cd src && sam deploy
+      - name: Export envs
+        id: sam-list
+        shell: bash
+        run: |
+          cd src && sam list resources --stack-name "auth-app" --output json > resources.json
+          AUTHORIZE_FUNCTION=$(jq -r '.[] | select(.LogicalResourceId=="AuthorizerFunction") | .PhysicalResourceId // "default-authorizer"' resources.json)
+          VALIDATE_FUNCTION=$(jq -r '.[] | select(.LogicalResourceId=="CustomerValidateFunction") | .PhysicalResourceId // "default-validator"' resources.json)
+          echo "AUTHORIZE_FUNCTION=$AUTHORIZE_FUNCTION"
+          echo "VALIDATE_FUNCTION=$VALIDATE_FUNCTION"
+          echo "authorizer=$AUTHORIZE_FUNCTION" >> $GITHUB_OUTPUT
+          echo "validator=$VALIDATE_FUNCTION" >> $GITHUB_OUTPUT
+      - run: echo "$OUTPUTS"
+        shell: bash
+        env:
+          OUTPUTS: ${{ toJSON(steps.sam-list.outputs) }}
+
+  terraform:
+    needs: build-deploy
+    name: "Terraform"
+    runs-on: ubuntu-latest
+    outputs:
+      stage_address: ${{ steps.apply.outputs.stage_address }}
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+          terraform_wrapper: false
+      - name: Terraform Format
+        id: fmt
+        run: terraform -chdir=infra fmt -check
+      - name: Terraform Init
+        id: init
+        run: terraform -chdir=infra init
+      - name: Terraform Validate
+        id: validate
+        run: terraform -chdir=infra validate -no-color
+      - name: Terraform Plan
+        id: plan
+        if: github.event_name == 'pull_request'
+        env:
+          AUTHORIZE_FUNCTION: ${{ needs.build-deploy.outputs.authorizer }}
+          VALIDATE_FUNCTION: ${{ needs.build-deploy.outputs.validator }}
+          PLAN: ${{ steps.plan.outputs.stdout }}
+        shell: bash
+        run: |
+          echo "AUTHORIZE_FUNCTION=${{ env.AUTHORIZE_FUNCTION }}"
+          echo "VALIDATE_FUNCTION=${{ env.VALIDATE_FUNCTION }}"
+          terraform -chdir=infra plan \
+            -var="customer_validate_function_name=${{ env.VALIDATE_FUNCTION }}" \
+            -var="authorizer_function_name=${{ env.AUTHORIZE_FUNCTION }}" \
+            -no-color -input=false
+        continue-on-error: true
+      - name: Update Pull Request
+        uses: actions/github-script@v6
+        if: github.event_name == 'pull_request'
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const botComment = comments.find(comment => {
+              return comment.user.type === 'Bot' && comment.body.includes('Terraform Format and Style')
+            });
+            const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+            #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+
+            <details><summary>Show Plan</summary>
+
+            \`\`\`terraform\n
+            ${process.env.PLAN}
+            \`\`\`
+
+            </details>
+
+            *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+            if (botComment) {
+              github.rest.issues.deleteComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+              });
+            }
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            });
+      - name: Terraform Plan Status
+        if: steps.plan.outcome == 'failure'
+        run: exit 1
+      - name: Terraform Apply
+        id: apply
+        if: (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/RELEASE/')) && github.event_name == 'push'
+        env:
+          AUTHORIZE_FUNCTION: ${{ needs.build-deploy.outputs.authorizer }}
+          VALIDATE_FUNCTION: ${{ needs.build-deploy.outputs.validator }}
+        shell: bash
+        run: |
+          terraform -chdir=infra apply \
+            -var="customer_validate_function_name=${{ env.VALIDATE_FUNCTION }}" \
+            -var="authorizer_function_name=${{ env.AUTHORIZE_FUNCTION }}" \
+            -auto-approve -input=false
+
+          # Capture the stage_address output
+          STAGE_ADDRESS=$(terraform -chdir=infra output -raw stage_address)
+          echo "stage_address=$STAGE_ADDRESS" >> $GITHUB_OUTPUT
+          echo "::set-output name=stage_address_v2::$STAGE_ADDRESS"
+  work-around:
+    if: (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/RELEASE/')) && github.event_name == 'push'
+    needs: [terraform, build-deploy]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: us-east-1
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+      - name: Update lambda env
+        shell: bash
+        env:
+          STAGE_ADDRESS: ${{ needs.terraform.outputs.stage_address }}api/v1
+          VALIDATE_FUNCTION: ${{ needs.build-deploy.outputs.validator }}
+        run: |
+          aws lambda update-function-configuration \
+            --function-name ${{ env.VALIDATE_FUNCTION }} \
+            --environment "Variables={TECH_CHALLENGE_URI=${{ env.STAGE_ADDRESS }}, NODE_OPTIONS=\"--enable-source-maps\"}"
