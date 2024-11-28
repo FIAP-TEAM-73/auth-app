@@ -30,8 +30,8 @@ data "aws_lb" "lb-payment-api" {
 }
 
 
-data "aws_lb_listener" "listener-order-api" {
-  for_each          = data.aws_lb.lb-order-api
+data "aws_lb_listener" "listener-payment-api" {
+  for_each          = data.aws_lb.lb-payment-api
   load_balancer_arn = each.value.arn
   port              = 80
 }
