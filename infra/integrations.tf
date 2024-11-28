@@ -1,7 +1,7 @@
 locals {
-  first_listener_arn = keys(data.aws_lb_listener.listener)[0]
+  first_listener_arn             = keys(data.aws_lb_listener.listener)[0]
   first_listener_payment_api_arn = keys(data.aws_lb_listener.listener-payment-api)[0]
-  first_listener_order_api_arn = keys(data.aws_lb_listener.listener-order-api)[0]
+  first_listener_order_api_arn   = keys(data.aws_lb_listener.listener-order-api)[0]
 }
 
 resource "aws_apigatewayv2_integration" "integration-tech-challenge-73" {
