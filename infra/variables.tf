@@ -21,3 +21,8 @@ variable "default_security_group" {
   type        = string
   description = "AWS Academy default security group"
 }
+
+variable "service_name" {
+  type        = string
+  description = "K8s SVC load balance tag name"
+}

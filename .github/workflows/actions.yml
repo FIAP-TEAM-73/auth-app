@@ -5,7 +5,6 @@ on:
     branches:
       - main
       - RELEASE/*
-      - FEATURE/*
   pull_request:
 
 env:
@@ -67,6 +66,9 @@ jobs:
       stage_address: ${{ steps.apply.outputs.stage_address }}
     permissions:
       pull-requests: write
+    strategy:
+      matrix:
+        service: [svc-api, svc-payment-api, svc-order-api]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -96,6 +98,7 @@ jobs:
           echo "AUTHORIZE_FUNCTION=${{ env.AUTHORIZE_FUNCTION }}"
           echo "VALIDATE_FUNCTION=${{ env.VALIDATE_FUNCTION }}"
           terraform -chdir=infra plan \
+            -var="service_name=${{ matrix.service }}" \
             -var="customer_validate_function_name=${{ env.VALIDATE_FUNCTION }}" \
             -var="authorizer_function_name=${{ env.AUTHORIZE_FUNCTION }}" \
             -no-color -input=false

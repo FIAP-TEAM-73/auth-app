@@ -1,6 +1,6 @@
 data "aws_lbs" "lb-tags" {
   tags = {
-    "kubernetes.io/service-name" = "default/svc-api"
+    "kubernetes.io/service-name" = "default/${var.service_name}"
   }
 
 }
@@ -13,44 +13,6 @@ data "aws_lb" "lb-tech-challenge-73" {
 
 data "aws_lb_listener" "listener" {
   for_each          = data.aws_lb.lb-tech-challenge-73
-  load_balancer_arn = each.value.arn
-  port              = 80
-}
-
-data "aws_lbs" "lb-tags-payment-api" {
-  tags = {
-    "kubernetes.io/service-name" = "default/svc-payment-api"
-  }
-
-}
-
-data "aws_lb" "lb-payment-api" {
-  for_each = toset(data.aws_lbs.lb-tags-payment-api.arns)
-  arn      = each.value
-}
-
-
-data "aws_lb_listener" "listener-payment-api" {
-  for_each          = data.aws_lb.lb-payment-api
-  load_balancer_arn = each.value.arn
-  port              = 80
-}
-
-data "aws_lbs" "lb-tags-order-api" {
-  tags = {
-    "kubernetes.io/service-name" = "default/svc-order-api"
-  }
-
-}
-
-data "aws_lb" "lb-order-api" {
-  for_each = toset(data.aws_lbs.lb-tags-order-api.arns)
-  arn      = each.value
-}
-
-
-data "aws_lb_listener" "listener-order-api" {
-  for_each          = data.aws_lb.lb-order-api
   load_balancer_arn = each.value.arn
   port              = 80
 }

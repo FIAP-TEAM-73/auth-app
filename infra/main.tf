@@ -3,7 +3,7 @@ provider "aws" {
 }
 
 resource "aws_apigatewayv2_api" "api-tech-challenge-73" {
-  name          = "api-tech-challenge-73"
+  name          = var.service_name
   protocol_type = "HTTP"
 }
 
