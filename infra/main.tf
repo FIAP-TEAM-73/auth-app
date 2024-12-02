@@ -3,13 +3,11 @@ provider "aws" {
 }
 
 resource "aws_apigatewayv2_api" "api-tech-challenge-73" {
-  id            = "id_api_gateway_${var.service_name}"
   name          = var.service_name
   protocol_type = "HTTP"
 }
 
 resource "aws_apigatewayv2_vpc_link" "vpc-link-tech-challenge" {
-  id                 = "id_vpc_link_${var.service_name}"
   name               = "vpc-link-${var.service_name}"
   security_group_ids = [var.default_security_group]
   subnet_ids         = [for subnet in data.aws_subnet.subnet : subnet.id if subnet.availability_zone != "${var.region}e"]
@@ -20,7 +18,6 @@ resource "aws_apigatewayv2_vpc_link" "vpc-link-tech-challenge" {
 }
 
 resource "aws_apigatewayv2_stage" "stage-tech-challenge-73" {
-  id          = "id_stage_${var.service_name}"
   api_id      = aws_apigatewayv2_api.api-tech-challenge-73.id
   name        = "$default"
   auto_deploy = true
