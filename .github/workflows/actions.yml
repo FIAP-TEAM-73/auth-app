@@ -161,7 +161,7 @@ jobs:
           echo "stage_address=$STAGE_ADDRESS" >> $GITHUB_OUTPUT
           echo "::set-output name=stage_address_v2::$STAGE_ADDRESS"
   work-around:
-    #if: (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/RELEASE/')) && github.event_name == 'push'
+    if: (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/RELEASE/')) && github.event_name == 'push'
     needs: [terraform, build-deploy]
     runs-on: ubuntu-latest
     steps:
