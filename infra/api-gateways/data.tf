@@ -1,6 +1,6 @@
 data "aws_lbs" "lb-tags" {
   tags = {
-    "kubernetes.io/service-name" = "default/svc-api"
+    "kubernetes.io/service-name" = "default/${var.service_name}"
   }
 
 }
@@ -16,6 +16,7 @@ data "aws_lb_listener" "listener" {
   load_balancer_arn = each.value.arn
   port              = 80
 }
+
 
 data "aws_vpc" "vpc" {
   cidr_block = "172.31.0.0/16"

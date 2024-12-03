@@ -4,7 +4,7 @@ locals {
 
 resource "aws_apigatewayv2_integration" "integration-tech-challenge-73" {
   api_id             = aws_apigatewayv2_api.api-tech-challenge-73.id
-  description        = "Example with a load balancer"
+  description        = "Integration with Backoffice LB"
   integration_type   = "HTTP_PROXY"
   integration_uri    = data.aws_lb_listener.listener[local.first_listener_arn].arn
   integration_method = "ANY"

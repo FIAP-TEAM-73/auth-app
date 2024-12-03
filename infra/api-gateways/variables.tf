@@ -1,3 +1,7 @@
+variable "region" {
+  default = "us-east-1"
+}
+
 variable "customer_validate_function_name" {
   description = "Customer validate function name"
   type        = string
@@ -16,4 +20,9 @@ variable "account_id" {
 variable "default_security_group" {
   type        = string
   description = "AWS Academy default security group"
+}
+
+variable "service_name" {
+  type        = string
+  description = "K8s SVC load balance tag name"
 }
