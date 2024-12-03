@@ -145,7 +145,7 @@ jobs:
         run: exit 1
       - name: Terraform Apply
         id: apply
-        #if: (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/RELEASE/')) && github.event_name == 'push'
+        if: (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/RELEASE/')) && github.event_name == 'push'
         env:
           AUTHORIZE_FUNCTION: ${{ needs.build-deploy.outputs.authorizer }}
           VALIDATE_FUNCTION: ${{ needs.build-deploy.outputs.validator }}
