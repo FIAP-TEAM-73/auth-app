@@ -28,7 +28,7 @@ resource "aws_lambda_permission" "allow_api_gateway_invoke" {
   function_name = "arn:aws:lambda:us-east-1:${var.account_id}:function:${var.customer_validate_function_name}"
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.api-tech-challenge-73.execution_arn}/*/*/customer/validate"
-  
+
 }
 
 resource "aws_lambda_permission" "allow_authorizer" {
